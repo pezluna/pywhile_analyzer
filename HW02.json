@@ -1,0 +1,188 @@
+parse time:   0.02s
+{
+    "Prog": [
+        [
+            [
+                {
+                    "TyInt": []
+                },
+                "t"
+            ],
+            [
+                {
+                    "TyInt": []
+                },
+                "p"
+            ],
+            [
+                {
+                    "TyInt": []
+                },
+                "q"
+            ]
+        ],
+        [
+            {
+                "CRead": "p"
+            },
+            {
+                "CRead": "q"
+            },
+            {
+                "CIf": [
+                    {
+                        "EBinOp": [
+                            {
+                                "OpOr": []
+                            },
+                            {
+                                "EBinOp": [
+                                    {
+                                        "OpLessThan": []
+                                    },
+                                    {
+                                        "EVar": "q"
+                                    },
+                                    {
+                                        "EVar": "p"
+                                    }
+                                ]
+                            },
+                            {
+                                "EBinOp": [
+                                    {
+                                        "OpEqual": []
+                                    },
+                                    {
+                                        "EVar": "q"
+                                    },
+                                    {
+                                        "EVar": "p"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "CSkip": []
+                    },
+                    {
+                        "CSeq": [
+                            {
+                                "CAssign": [
+                                    "t",
+                                    {
+                                        "EVar": "p"
+                                    }
+                                ]
+                            },
+                            {
+                                "CSeq": [
+                                    {
+                                        "CAssign": [
+                                            "p",
+                                            {
+                                                "EVar": "q"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "CAssign": [
+                                            "q",
+                                            {
+                                                "EVar": "t"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "CWhile": [
+                    {
+                        "EUnaryOp": [
+                            {
+                                "OpNot": []
+                            },
+                            {
+                                "EBinOp": [
+                                    {
+                                        "OpEqual": []
+                                    },
+                                    {
+                                        "EBinOp": [
+                                            {
+                                                "OpMod": []
+                                            },
+                                            {
+                                                "EVar": "p"
+                                            },
+                                            {
+                                                "EVar": "q"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "ECst": {
+                                            "CInt": 0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "CSeq": [
+                            {
+                                "CAssign": [
+                                    "t",
+                                    {
+                                        "EBinOp": [
+                                            {
+                                                "OpMod": []
+                                            },
+                                            {
+                                                "EVar": "p"
+                                            },
+                                            {
+                                                "EVar": "q"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "CSeq": [
+                                    {
+                                        "CAssign": [
+                                            "p",
+                                            {
+                                                "EVar": "q"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "CAssign": [
+                                            "q",
+                                            {
+                                                "EVar": "t"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "CWrite": {
+                    "EVar": "q"
+                }
+            }
+        ]
+    ]
+}
