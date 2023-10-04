@@ -120,31 +120,31 @@ def ast_to_while(ast, indent = 0):
     elif isinstance(ast, CSkip):
         ret += " " * indent + "skip"
     elif isinstance(ast, CSeq):
-        ret += " " * indent + f"{ast_to_while(ast.comm1, indent)};\n"
-        ret += " " * indent + f"{ast_to_while(ast.comm2, indent)}"
+        ret += f"{ast_to_while(ast.comm1, indent)}\n"
+        ret += f"{ast_to_while(ast.comm2, indent)}"
     elif isinstance(ast, CAssign):
-        ret += " " * indent + f"{ast.var_name} = {ast_to_while(ast.expr)}"
+        ret += " " * indent + f"{ast.var_name} = {ast_to_while(ast.expr)};"
     elif isinstance(ast, CRead):
-        ret += " " * indent + f"read ({ast.var_name})"
+        ret += " " * indent + f"read ({ast.var_name});"
     elif isinstance(ast, CWrite):
-        ret += " " * indent + f"write ({ast_to_while(ast.expr)})"
+        ret += " " * indent + f"write ({ast_to_while(ast.expr)});"
     elif isinstance(ast, CIf):
         ret += " " * indent + f"if ({ast_to_while(ast.expr)})\n"
         ret += " " * indent + f"then\n"
         ret += " " * indent + "{\n"
-        ret += f"{ast_to_while(ast.comm1, indent)}\n"
+        ret += f"{ast_to_while(ast.comm1, indent+2)}\n"
         ret += " " * indent + "}\n"
         ret += " " * indent + f"else\n"
         ret += " " * indent + "{\n"
-        ret += f"{ast_to_while(ast.comm2, indent)}"
+        ret += f"{ast_to_while(ast.comm2, indent+2)}"
         ret += " " * indent + "\n}"
     elif isinstance(ast, CWhile):
         ret += " " * indent + f"while ({ast_to_while(ast.expr)})\n"
         ret += " " * indent + "{\n"
-        ret += f"{ast_to_while(ast.comm, indent)}"
+        ret += f"{ast_to_while(ast.comm, indent+2)}"
         ret += " " * indent + "\n}"
     elif isinstance(ast, CAssert):
-        ret += " " * indent + f"assert ({ast_to_while(ast.expr)})\n"
+        ret += " " * indent + f"assert ({ast_to_while(ast.expr)});\n"
     
     # Expressions
     elif isinstance(ast, ECst):
@@ -194,7 +194,7 @@ def ast_to_while(ast, indent = 0):
         for element in ast:
             ret += f"{ast_to_while(element, indent)}\n"
     elif isinstance(ast, tuple):
-        ret += f"{ast_to_while(ast[0], indent)} {ast_to_while(ast[1], indent)}"
+        ret += f"{ast_to_while(ast[0], indent)} {ast_to_while(ast[1], indent)};"
     elif isinstance(ast, str):
         ret += ast
 
