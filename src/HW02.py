@@ -200,14 +200,15 @@ def ast_to_while(ast, indent = 0):
 
     return ret
 
+if __name__ == "__main__":
+    json_path = "../json/HW02.json"
 
-json_path = "../json/HW02.json"
+    with open(json_path, 'r') as f:
+        data = json.load(f)
 
-with open(json_path, 'r') as f:
-    data = json.load(f)
+    ast = from_data_to_class(data)
 
-ast = from_data_to_class(data)
+    print(str(ast))
+    print("-"*20)
+    print(ast_to_while(ast))
 
-print(str(ast))
-print("-"*20)
-print(ast_to_while(ast))
