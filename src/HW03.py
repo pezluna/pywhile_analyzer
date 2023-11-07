@@ -107,7 +107,7 @@ class Interp:
             return env
         
         if isinstance(comm, CRead):
-            value = input()
+            value = input(">>> ")
             var_type = env[comm.var_name][0]
 
             if isinstance(var_type, TyInt):
