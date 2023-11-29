@@ -4,179 +4,158 @@ import json
 from AST import *
 from HW02 import from_data_to_class
 
-Env = Dict[VarName, Const]
 TyEnv = Dict[VarName, Type]
 
-class Interp:
-    def __init__(self, prog: Prog) -> None:
-        self.prog = prog
-        self.env: Env = {}
-        self.tyenv: TyEnv = {}
-        self.init_env()
+class TypeChecker:
+    def __init__(self) -> None:
+        pass
 
-    def init_env(self) -> None:
-        for decl in self.prog.progDecls:
-            self.env[decl[1]] = None
-            self.tyenv[decl[1]] = decl[0]
+    def init_env(prog: Prog) -> TyEnv:
+        tyenv = {}
+        for decl in prog.progDecls:
+            tyenv[decl[1]] = decl[0]
+        return tyenv
     
-    def calculate_expr(self, expr: Expr, env: Env, tyenv: TyEnv) -> Tuple[Const, TyEnv]:
+    def typecheckExpr(tyenv: TyEnv, expr: Expr) -> Type:
         if isinstance(expr, ECst):
-            return expr.value
+            if isinstance(expr.value, CInt):
+                return TyInt()
+            if isinstance(expr.value, CBool):
+                return TyBool()
         
         if isinstance(expr, EVar):
             try:
-                return env[expr.var_name]
+                return tyenv[expr.var_name]
             except KeyError:
                 raise Exception(f"Variable {expr.var_name} not defined")
         
         if isinstance(expr, EBinOp):
-            left = self.calculate_expr(expr.left, env, tyenv)
-            right = self.calculate_expr(expr.right, env, tyenv)
-            
-            if isinstance(left, Const):
-                left_value = left.value
-            else:
-                raise Exception(f"Expected const, got {left}")
-            if isinstance(right, Const):
-                right_value = right.value
-            else:
-                raise Exception(f"Expected const, got {right}")
+            left = TypeChecker.typecheckExpr(tyenv, expr.left)
+            right = TypeChecker.typecheckExpr(tyenv, expr.right)
 
             op = expr.op
             
             if isinstance(op, OpAdd):
-                if isinstance(left, CBool) or isinstance(right, CBool):
-                    raise Exception(f"Expected int, got {left} and {right}")
-                return CInt(left_value + right_value)
+                if isinstance(left, TyInt) and isinstance(right, TyInt):
+                    return TyInt()
+                raise Exception(f"Expected int, got {left} and {right}")
+            
             if isinstance(op, OpSub):
-                if isinstance(left, CBool) or isinstance(right, CBool):
-                    raise Exception(f"Expected int, got {left} and {right}")
-                return CInt(left_value - right_value)
+                if isinstance(left, TyInt) and isinstance(right, TyInt):
+                    return TyInt()
+                raise Exception(f"Expected int, got {left} and {right}")
+            
             if isinstance(op, OpMul):
-                if isinstance(left, CBool) or isinstance(right, CBool):
-                    raise Exception(f"Expected int, got {left} and {right}")
-                return CInt(left_value * right_value)
+                if isinstance(left, TyInt) and isinstance(right, TyInt):
+                    return TyInt()
+                raise Exception(f"Expected int, got {left} and {right}")
+            
             if isinstance(op, OpDiv):
-                if isinstance(left, CBool) or isinstance(right, CBool):
-                    raise Exception(f"Expected int, got {left} and {right}")
-                if right_value == 0:
-                    raise Exception(f"Division by zero")
-                return CInt(left_value // right_value)
+                if isinstance(left, TyInt) and isinstance(right, TyInt):
+                    return TyInt()
+                raise Exception(f"Expected int, got {left} and {right}")
+            
             if isinstance(op, OpMod):
-                if isinstance(left, CBool) or isinstance(right, CBool):
-                    raise Exception(f"Expected int, got {left} and {right}")
-                if right_value == 0:
-                    raise Exception(f"Division by zero")
-                return CInt(left_value % right_value)
+                if isinstance(left, TyInt) and isinstance(right, TyInt):
+                    return TyInt()
+                raise Exception(f"Expected int, got {left} and {right}")
+            
             if isinstance(op, OpLessThan):
-                if isinstance(left, CBool) or isinstance(right, CBool):
-                    raise Exception(f"Expected int, got {left} and {right}")
-                return CBool(left_value < right_value)
+                if isinstance(left, TyInt) and isinstance(right, TyInt):
+                    return TyBool()
+                raise Exception(f"Expected int, got {left} and {right}")
+            
             if isinstance(op, OpEqual):
-                if isinstance(left, CBool) and isinstance(right, CBool):
-                    return CBool(left_value == right_value)
-                if isinstance(left, CInt) and isinstance(right, CInt):
-                    return CBool(left_value == right_value)
+                if isinstance(left, TyBool) and isinstance(right, TyBool):
+                    return TyBool()
+                if isinstance(left, TyInt) and isinstance(right, TyInt):
+                    return TyBool()
                 raise Exception(f"Expected same types, got {left} and {right}")
+            
             if isinstance(op, OpAnd):
-                if isinstance(left, CInt) or isinstance(right, CInt):
-                    raise Exception(f"Expected bool, got {left} and {right}")
-                return CBool(left_value and right_value)
+                if isinstance(left, TyBool) and isinstance(right, TyBool):
+                    return TyBool()
+                raise Exception(f"Expected bool, got {left} and {right}")
+            
             if isinstance(op, OpOr):
-                if isinstance(left, CInt) or isinstance(right, CInt):
-                    raise Exception(f"Expected bool, got {left} and {right}")
-                return CBool(left_value or right_value)
-
+                if isinstance(left, TyBool) and isinstance(right, TyBool):
+                    return TyBool()
+                raise Exception(f"Expected bool, got {left} and {right}")
+            
+            raise Exception(f"Unknown operator: {op}")
+        
         if isinstance(expr, EUnaryOp):
-            b = self.calculate_expr(expr.expr, env, tyenv)
+            ty = TypeChecker.typecheckExpr(tyenv, expr.expr)
             op = expr.op
 
-            if isinstance(b, CBool):
-                b = b.value
-            else:
-                raise Exception(f"Expected bool, got {b}")
-            
             if isinstance(op, OpNot):
-                return CBool(not b)
+                if isinstance(ty, TyBool):
+                    return TyBool()
+            raise Exception(f"Expected bool, got {ty}")
             
         raise Exception(f"Unknown expression type: {expr}")
 
-    def execute_comm(self, comm: Comm, env: Env, tyenv: TyEnv) -> Tuple[Env, TyEnv]:
+    def typecheckComm(tyenv: TyEnv, comm: Comm) -> None:
         if isinstance(comm, CSkip):
-            return env, tyenv
+            return
         
         if isinstance(comm, CSeq):
-            env, tyenv = self.execute_comm(comm.comm1, env, tyenv)
-            env, tyenv = self.execute_comm(comm.comm2, env, tyenv)
-            return env, tyenv
+            TypeChecker.typecheckComm(tyenv, comm.comm1)
+            TypeChecker.typecheckComm(tyenv, comm.comm2)
+            return
         
         if isinstance(comm, CAssign):
-            expr = self.calculate_expr(comm.expr, env, tyenv)
-            var_type = tyenv[comm.var_name]
+            ty = TypeChecker.typecheckExpr(tyenv, comm.expr)
 
-            if isinstance(var_type, TyBool):
-                if isinstance(expr, CInt):
-                    raise Exception(f"Expected bool, got {expr}")
-                env[comm.var_name] = expr
-            elif isinstance(var_type, TyInt):
-                if isinstance(expr, CBool):
-                    raise Exception(f"Expected int, got {expr}")
-                env[comm.var_name] = expr
+            try:
+                var_type = tyenv[comm.var_name]
+            except KeyError:
+                raise Exception(f"Variable {comm.var_name} not defined")
+            
+            if type(ty) == type(var_type):
+                return
             else:
-                raise Exception(f"Unknown type: {var_type}")
-            return env, tyenv
+                raise Exception(f"Expected the same types: {ty} != {var_type}")
         
         if isinstance(comm, CRead):
-            value = input(">>> ")
-            var_type = tyenv[comm.var_name]
+            try:
+                var_type = tyenv[comm.var_name]
+            except KeyError:
+                raise Exception(f"Variable {comm.var_name} not defined")
             
-            if isinstance(var_type, TyBool):
-                if value == "True":
-                    env[comm.var_name] = CBool(True)
-                elif value == "False":
-                    env[comm.var_name] = CBool(False)
-                else:
-                    raise Exception(f"Expected bool, got {value}")
-            elif isinstance(var_type, TyInt):
-                try:
-                    env[comm.var_name] = CInt(int(value))
-                except ValueError:
-                    raise Exception(f"Expected int, got {value}")
-            else:
-                raise Exception(f"Unknown type: {var_type}")
-
-            return env, tyenv
+            return 
         
         if isinstance(comm, CWrite):
-            print(self.calculate_expr(comm.expr, env, tyenv).value)
-            return env, tyenv
+            ty = TypeChecker.typecheckExpr(tyenv, comm.expr)
+            return
         
         if isinstance(comm, CIf):
-            if self.calculate_expr(comm.expr, env, tyenv):
-                env, tyenv = self.execute_comm(comm.comm1, env, tyenv)
-            else:
-                env, tyenv = self.execute_comm(comm.comm2, env, tyenv)
-            return env, tyenv
+            ty = TypeChecker.typecheckExpr (tyenv, comm.expr)
+            if isinstance(ty, TyBool):
+                TypeChecker.typecheckComm(tyenv, comm.comm1)
+                TypeChecker.typecheckComm(tyenv, comm.comm2)
+                return
+            raise Exception(f"Expression {comm.expr} is of type {ty}, not of type bool")
         
         if isinstance(comm, CWhile):
-            expr_type = self.calculate_expr(comm.expr, env, tyenv)
-            if isinstance(expr_type, CInt):
-                raise Exception(f"Expected bool, got {expr_type}")
-            while self.calculate_expr(comm.expr, env, tyenv).value == True:
-                env, tyenv = self.execute_comm(comm.comm, env, tyenv)
-            return env, tyenv
+            ty = TypeChecker.typecheckExpr(tyenv, comm.expr)
+            if isinstance(ty, TyBool):
+                TypeChecker.typecheckComm(tyenv, comm.comm)
+                return
+            raise Exception(f"Expression {comm.expr} is of type {ty}, not of type bool")
         
         if isinstance(comm, CAssert):
-            assert self.calculate_expr(comm.expr, env, tyenv), f"Assertion failed: {comm.expr}"
-            return env, tyenv
+            ty = TypeChecker.typecheckExpr(tyenv, comm.expr)
+            if isinstance(ty, TyBool):
+                return
+            raise Exception(f"Expression {comm.expr} is of type {ty}, not of type bool")
         
         raise Exception(f"Unknown command type: {comm}")
 
-    def execute_comms(self) -> None:
-        env = self.env
-        tyenv = self.tyenv
-        for comm in self.prog.progComms:
-            env, tyenv = self.execute_comm(comm, env, tyenv)
+    def typeCheckProgram(self, prog: Prog) -> None:
+        tyenv = TypeChecker.init_env(prog)
+        for comm in prog.progComms:
+            TypeChecker.typecheckComm(tyenv, comm)
 
 if __name__ == "__main__":
     json_path = "../json/HW02.json"
@@ -186,6 +165,5 @@ if __name__ == "__main__":
 
     ast = from_data_to_class(data)
 
-    interp = Interp(ast)
-
-    interp.execute_comms()
+    typeChecker = TypeChecker()
+    typeChecker.typeCheckProgram(ast)
